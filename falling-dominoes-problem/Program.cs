@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace falling_dominoes_problem
 {
@@ -47,36 +49,48 @@ namespace falling_dominoes_problem
             //easier to work with during loop.
             char[] inputAsArray = input.ToCharArray();
 
-            string tempHolding;
+            List<char> tempHolding;
 
             //outer loop (front -> end) 
-            for(int x = 0; x != ( numberOfdominoes - 1 ) ; x ++)
+            for(int counter = 0; counter != ( numberOfdominoes - 1 ) ; counter++)
             {
                 //Loop each dominoe. 
                 //pass in the current dominoe and the dominoe to the Left and Right of the current.
-                tempHolding = performCheck( inputAsArray[x - 1].ToString(), 
-                                            inputAsArray[x].ToString(), 
-                                            inputAsArray[x + 1].ToString());
+                //If current dominoe is the first or the last - then use X for place holder as the end and remove X at end of processing. 
 
 
+                tempHolding = performCheck( 
+                    
+                    inputAsArray[ counter == 0 ? 'X' :  counter - 1 ].ToString(), 
+                    inputAsArray[counter].ToString(), 
+                    inputAsArray[counter == numberOfdominoes ? 'X' : counter + 1].ToString()).ToList();
 
-                inputAsArray[x - 1] = tempHolding[x - 1];
-                inputAsArray[x] = tempHolding[x];
-                inputAsArray[x + 1] = tempHolding[x + 1];
+                
+                //Store current state of dominoes 
+                inputAsArray[counter - 1] = tempHolding[counter == 0 ? 'X' : counter - 1];
+                inputAsArray[counter] = tempHolding[counter];
+                inputAsArray[counter + 1] = tempHolding[counter == numberOfdominoes ? 'X' : counter + 1];
 
+                //After check has been performed for the first "frame" in time - we need to remove any potential X place holders that might exist now. 
+                if( inputAsArray.Any(q => q == 'X' )) {
 
-                tempHolding = "";
+                    for(int counter2 = 0; counter2 == inputAsArray.Length; counter2 ++) {
+                        if( inputAsArray[counter2] == 'X')
+                        {
+                            //Remove the X placeholder
+                            inputAsArray.CopyTo(input)
+                        }
+                            
+                    }
+                }
 
-
+                tempHolding.Clear();
 
                 ////inner loop (end -> front)
                 //for(int y = numberOfdominoes; y != 0; y --)
                 //{
 
                 //}
-                    
-
-
             }
 
             return inputAsArray.ToString();
