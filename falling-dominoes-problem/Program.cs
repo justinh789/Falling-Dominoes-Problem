@@ -37,52 +37,48 @@ namespace falling_dominoes_problem
 
             string input = Console.ReadLine(); 
 
-            Console.WriteLine("Output: " + RunSimulation(input));
+            Console.Write("Output: " );
+            RunSimulation(input);
         }
 
         //this method should be named push Dominoes I guess. 
-        private static string RunSimulation(string input)
+        private static void RunSimulation(string input)
         {
 
             int numberOfdominoes = input.Length;
 
             //easier to work with during loop.
-            char[] inputAsArray = input.ToCharArray();
+            List<char> inputAsList = input.ToList();
 
-            List<char> tempHolding;
+            //Buffer the front and end with place holder X. Should first dominoe fall left or last dominoe fall right
+            inputAsList.Insert(0, 'X');
+            inputAsList.Add('X');
+
+            List<char> tempHolding = new List<char>();
 
             //outer loop (front -> end) 
-            for(int counter = 0; counter != ( numberOfdominoes - 1 ) ; counter++)
+            for(int counter = 1; counter <=  numberOfdominoes ; counter++)
             {
                 //Loop each dominoe. 
                 //pass in the current dominoe and the dominoe to the Left and Right of the current.
                 //If current dominoe is the first or the last - then use X for place holder as the end and remove X at end of processing. 
 
 
-                tempHolding = performCheck( 
-                    
-                    inputAsArray[ counter == 0 ? 'X' :  counter - 1 ].ToString(), 
-                    inputAsArray[counter].ToString(), 
-                    inputAsArray[counter == numberOfdominoes ? 'X' : counter + 1].ToString()).ToList();
+                tempHolding.AddRange(performCheck(
+
+                inputAsList[counter - 1].ToString(),
+                inputAsList[counter].ToString(),
+                inputAsList[counter + 1].ToString()).ToList()
+
+                            );
+
+
+                //Store current state of dominoes 
+                inputAsList[counter - 1] = tempHolding[0];
+                inputAsList[counter] = tempHolding[1];
+                inputAsList[counter + 1] = tempHolding[2];
 
                 
-                //Store current state of dominoes 
-                inputAsArray[counter - 1] = tempHolding[counter == 0 ? 'X' : counter - 1];
-                inputAsArray[counter] = tempHolding[counter];
-                inputAsArray[counter + 1] = tempHolding[counter == numberOfdominoes ? 'X' : counter + 1];
-
-                //After check has been performed for the first "frame" in time - we need to remove any potential X place holders that might exist now. 
-                if( inputAsArray.Any(q => q == 'X' )) {
-
-                    for(int counter2 = 0; counter2 == inputAsArray.Length; counter2 ++) {
-                        if( inputAsArray[counter2] == 'X')
-                        {
-                            //Remove the X placeholder
-                            inputAsArray.CopyTo(input)
-                        }
-                            
-                    }
-                }
 
                 tempHolding.Clear();
 
@@ -93,46 +89,87 @@ namespace falling_dominoes_problem
                 //}
             }
 
-            return inputAsArray.ToString();
+            //Should any place holder X's exist in the list then need to remove.
+            if (inputAsList.Any(q => q == 'X'))
+            {
+                inputAsList.RemoveAll(EqualsX);
+                //for (int counter2 = 0; counter2 == inputAsList.Count; counter2++)
+                //{
+                //    if (inputAsList[counter2] == 'X')
+                //    {
+                //        //Remove the X placeholder
+                //        //inputAsArray.CopyTo(input)
+                //    }
+
+                //}
+            }
+
+
+            inputAsList.ForEach(q => Console.Write( q.ToString() ) );
 
         }
+
+        /// <summary>
+        ///     Check contains logic only to made adjustments to the x2 parameter. 
+        //      We need x1 and x3 ( the dominoes on the left and right to help determine what needs to happen to x2 ( i.e. current dominoe )
+        /// </summary>
+        /// <param name="x1"></param>
+        /// <param name="x2"></param>
+        /// <param name="x3"></param>
+        /// <returns></returns>
 
         private static string performCheck(string x1, string x2, string x3) {
 
             string result = "";
 
-            if(x2 == "." && x1 == "." && x3 == ".")
+            if(( x1 == "X" || x1 == "."  || x1 == "R" || x1 == "L") 
+                && x2 == "." 
+                && ( x3 == "." || x3 == "X" || x3 == "L" || x3 == "R") )
             {
                 //no change
                 result = x1 + x2 + x3;
             }
 
-            if(x2 == "L" && x3 == ".")
+            else if(x2 == "L" &&  ( x3 == "." || x3 == "R" ) )
             {
                 //dominoe falls to the left
                 result = "L" + "L" + x3;
             }
 
-            if(x2 == "R" && x3 == ".")
+            else if(x2 == "R" && x3 == ".")
             {
                 //dominoe falls to the right
                 result = x1 + "R" + "R";
             }
 
-            if(x1 == "R" && x2 == "L")
+            else if(x1 == "R" && x2 == "L")
             {
                 //Momentum canceled. Force canceled. dominoes stay upright.
                 result = "." + "." + x3;
             }
 
-            if(x2 == "R" && x3 == "L")
+            else if(x2 == "R" && x3 == "L")
             {
                 //Momentum canceld. Force Cancled. dominoes stay upright.
                 result = x1 + "." + ".";
             }
 
+            else
+            {
+                //State in which the dominoes current are needs to be maitined for this 'frame in time'.
+                result = x1 + x2 + x3;
+            }
+
+
+
 
             return result;
+        }
+
+
+        private static bool EqualsX(char c)
+        {
+            return c == 'X';
         }
     }
 }
